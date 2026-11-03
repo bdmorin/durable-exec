@@ -1,9 +1,9 @@
 ---
 id: P0-04
 title: Select and exercise single-owner home exclusion
-status: open
-owner:
-branch:
+status: claimed
+owner: P0-04-agent
+branch: agent/P0-04-home-ownership
 depends_on: []
 owns: [src/home/ownership*, evidence/P0-04/]
 ---

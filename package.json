@@ -6,7 +6,7 @@
   "scripts": {
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "compile": "bun build ./src/main.ts --compile --outfile dist/horcrux"
+    "compile": "bun build ./src/main.ts --compile --no-compile-autoload-dotenv --no-compile-autoload-bunfig --outfile dist/horcrux"
   },
   "dependencies": {
     "@earendil-works/chord": "1.5.0",

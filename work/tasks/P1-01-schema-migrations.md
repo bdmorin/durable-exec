@@ -1,9 +1,9 @@
 ---
 id: P1-01
 title: Home schema, compatibility check, and migrations
-status: open
-owner:
-branch:
+status: claimed
+owner: P1-01-agent
+branch: agent/P1-01-schema-migrations
 depends_on: [P0-02]
 owns: [src/home/schema*, src/home/migrations*, evidence/P1-01/]
 ---

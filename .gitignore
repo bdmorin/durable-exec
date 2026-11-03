@@ -24,3 +24,6 @@ scratch/
 *.swp
 .idea/
 .vscode/
+
+# agent worktrees
+.claude/worktrees/

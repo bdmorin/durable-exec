@@ -1,6 +1,6 @@
 # Horcrux: the file is the system
 
-Status: current design iteration, ready for implementation planning. No application has been implemented in this repository. This document supersedes the runtime architecture in [the original Fossil handoff](horcrux-durable-fossil-handoff.md).
+Status: current design iteration, ready for implementation planning. No application has been implemented in this repository. This document supersedes the runtime architecture in [the original Fossil handoff](history/horcrux-durable-fossil-handoff.md).
 
 ## 1. Product contract
 

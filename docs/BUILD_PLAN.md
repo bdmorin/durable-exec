@@ -1,6 +1,6 @@
 # Horcrux implementation handoff
 
-Status: planning only. No listed application command is implemented yet. [DESIGN.md](DESIGN.md) is the behavioral contract; [README.md](README.md) is the entry point. Build the SQLite-native application, not the superseded Fossil integration.
+Status: planning only. No listed application command is implemented yet. [DESIGN.md](DESIGN.md) is the behavioral contract; [README.md](../README.md) is the entry point. Build the SQLite-native application, not the superseded Fossil integration.
 
 ## Baseline and engineering rules
 

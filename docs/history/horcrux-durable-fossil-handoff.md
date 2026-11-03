@@ -1,6 +1,6 @@
 # Agent horcrux: pi-durable + Fossil
 
-> Historical handoff — superseded. The current design is [Horcrux: the file is the system](DESIGN.md), with its [implementation plan](BUILD_PLAN.md). It uses Bun, pi-durable, and an application-owned SQLite home with a virtual filesystem. Fossil remains prior art; integrating or rewriting the Fossil runtime is no longer the build direction. The original exploration below is preserved for context, not as implementation instructions.
+> Historical handoff — superseded. The current design is [Horcrux: the file is the system](../DESIGN.md), with its [implementation plan](../BUILD_PLAN.md). It uses Bun, pi-durable, and an application-owned SQLite home with a virtual filesystem. Fossil remains prior art; integrating or rewriting the Fossil runtime is no longer the build direction. The original exploration below is preserved for context, not as implementation instructions.
 
 Explore a portable, durable lifecycle container for an agent: its configuration, conversations, tasks, work products, project history, and audit trail travel together in a SQLite database.
 

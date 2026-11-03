@@ -10,9 +10,9 @@ Pi-durable supplies agent execution and persisted conversation/task state. A cus
 
 Design and implementation handoff only. No application, package setup, or CLI commands have been implemented in this repository. References to commands in the design describe the intended interface, not commands available to run now.
 
-- [Current architecture and behavioral contracts](DESIGN.md)
-- [Build sequence, integration gates, and acceptance scenarios](BUILD_PLAN.md)
-- [Original Fossil handoff — historical, superseded](horcrux-durable-fossil-handoff.md)
+- [Current architecture and behavioral contracts](docs/DESIGN.md)
+- [Build sequence, integration gates, and acceptance scenarios](docs/BUILD_PLAN.md)
+- [Original Fossil handoff — historical, superseded](docs/history/horcrux-durable-fossil-handoff.md)
 
 ## This iteration
 
@@ -27,8 +27,12 @@ Design and implementation handoff only. No application, package setup, or CLI co
 
 Native desktop GUI, Fossil compatibility, distributed deployment, and rewriting pi-durable are not part of this build.
 
+## Working in this repo
+
+Multiple agents work here in parallel. Read [AGENTS.md](AGENTS.md) for the protocol, then pick an open task from [work/BOARD.md](work/BOARD.md). Proof goes in [evidence/](evidence/), exercised decisions in [docs/decisions/](docs/decisions/).
+
 ## Start building
 
-Follow Phase 0 of [BUILD_PLAN.md](BUILD_PLAN.md): pin the exercised dependencies, prove the compiled Bun/Pi state path, choose and exercise single-owner exclusion, and validate shared asynchronous SQLite transactions. Then implement the persistent workspace and complete agent interaction against the contracts in [DESIGN.md](DESIGN.md).
+Follow Phase 0 of [BUILD_PLAN.md](docs/BUILD_PLAN.md): pin the exercised dependencies, prove the compiled Bun/Pi state path, choose and exercise single-owner exclusion, and validate shared asynchronous SQLite transactions. Then implement the persistent workspace and complete agent interaction against the contracts in [DESIGN.md](docs/DESIGN.md).
 
 The local reference project `/Users/bdmorin/src/github.com/disler/durable-pi` demonstrates independently owned harnesses with reconnectable web/terminal clients. Borrow that lifecycle pattern, not its multi-database or home-directory configuration layout.

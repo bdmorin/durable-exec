@@ -1,9 +1,9 @@
 ---
 id: P0-01
 title: Pinned Bun/TypeScript tooling baseline
-status: open
-owner:
-branch:
+status: done
+owner: coordinator
+branch: llm/gifted-galileo-atanlf
 depends_on: []
 owns: [package.json, bun.lock, tsconfig.json, bunfig.toml, evidence/P0-01/]
 ---
@@ -14,11 +14,11 @@ Create the real package setup every other task builds on: Bun + TypeScript, pi-d
 
 ## Acceptance
 
-- [ ] `package.json` with exact (non-range) versions; `bun.lock` committed.
-- [ ] Commander version chosen and shown working under Bun (its Node engine field is not proof).
-- [ ] `bun test` runs (one real test is fine; no placeholder tests that assert nothing).
-- [ ] A compile script emits `dist/horcrux` from a minimal entry that prints help and exits 0 without touching disk.
-- [ ] Evidence: Bun/Node/OS/arch, install + compile commands and output.
+- [x] `package.json` with exact (non-range) versions; `bun.lock` committed.
+- [x] Commander version chosen and shown working under Bun (its Node engine field is not proof).
+- [x] `bun test` runs (one real test is fine; no placeholder tests that assert nothing).
+- [x] A compile script emits `dist/horcrux` from a minimal entry that prints help and exits 0 without touching disk.
+- [x] Evidence: Bun/Node/OS/arch, install + compile commands and output.
 
 ## Out of scope
 
@@ -26,3 +26,5 @@ Create the real package setup every other task builds on: Bun + TypeScript, pi-d
 - Choosing the terminal renderer (P0-05) or SQLite adapter (P0-02).
 
 ## Notes / handoff
+
+- 2026-11-03: Done on Linux x86_64. See evidence/P0-01. Typecheck via `bun run typecheck`. Next lanes unblocked: P0-02, P0-05.

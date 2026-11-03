@@ -3,11 +3,13 @@
 // Modes:
 //   try          acquire, report, release, exit
 //   hold         acquire and keep ownership until killed
-//   hold-sqlite  acquire, then open/write/close the home with bun:sqlite, keep ownership
+//   hold-sqlite  acquire, open the home with openHomeDatabase (and, separately, bun:sqlite),
+//                write, close both, keep ownership
 //   hold-spawn   acquire, spawn a long-lived grandchild (pid reported), keep ownership
 // If goFile is given, wait for it to exist before acquiring (start barrier).
 // Prints exactly one status line: "OWNED <dev> <ino> [extra]" or "REFUSED <code>".
 import { Database } from "bun:sqlite";
+import { openHomeDatabase } from "../db/home-database.ts";
 import { existsSync } from "node:fs";
 import { acquireHomeOwnership, HomeOwnershipError } from "./ownership.ts";
 
@@ -28,9 +30,12 @@ try {
 
 let extra = "";
 if (mode === "hold-sqlite") {
+  const facade = await openHomeDatabase(home);
+  await facade.exec("create table if not exists t(x)");
+  await facade.run("insert into t values (1)");
+  await facade.close();
   const db = new Database(home);
-  db.run("create table if not exists t(x)");
-  db.run("insert into t values (1)");
+  db.run("insert into t values (2)");
   db.close();
   Bun.gc(true);
   extra = "sqlite-closed";

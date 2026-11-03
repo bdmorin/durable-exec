@@ -8,7 +8,8 @@
 | Filesystem | ext4 (local), test homes under `os.tmpdir()` |
 | Bun | 1.4.4 (38afee6c8); `bun:sqlite` reports SQLite 3.53.4 (Bun's bundled copy on Linux) |
 | Node | v22.23.4 (not used by the module or tests) |
-| Dependencies | none. Only `bun:ffi`, `bun:sqlite`, and `node:fs`/`os`/`path` |
+| Dependencies | the module uses only `bun:ffi` and `node:fs`. The tests also use P0-02's `openHomeDatabase` (Chord 1.5.0 `NodeSqliteDatabase` over Bun's `node:sqlite`, also SQLite 3.53.4) and `bun:sqlite` |
+| Base | rebased onto `llm/gifted-galileo-atanlf` at `c34fbbe` (P0-01 + P0-02 merged); `bun install` from the committed lockfile |
 
 ## Decision
 
@@ -20,8 +21,9 @@ Why it wins:
 
 1. **The kernel releases the lock on death.** A SIGKILLed owner leaves no state that needs recovery. The companion file stays behind, but it has no meaning unless someone holds a lock on it. There is no PID file, lease or timeout, so a paused owner keeps ownership indefinitely.
 2. **The lock belongs to the open file description, not the process.** SQLite opening and closing the home in the owner process can't drop it. That is the POSIX `fcntl` trap, reproduced in probe B below. A second acquire in the same process is refused too.
-3. **It doesn't depend on the SQLite connection.** Ownership can be taken *before* a writable harness is opened (DESIGN §4: "Reject a competing owner before opening a writable harness"). It doesn't limit how many connections or readers the owner uses, and it can't be lost because a `Database` object was garbage-collected (probe E vs E3).
-4. **It works the same on Linux and macOS, as far as the APIs go.** `flock(int, int)` is not variadic, and BSD and Linux share the `LOCK_*` values. Of the candidates, it is the only one with no variadic FFI call and no OFD dependency.
+3. **It coexists with P0-02's facade.** The module only `realpath`s and `stat`s the home. It never opens an fd on it, so it can't drop SQLite's own POSIX locks in the owner. The integration test below checks this with `openHomeDatabase` open in the owner. No hook in `src/db/` is needed: callers acquire ownership, then `openHomeDatabase`, and release after `close()`.
+4. **It doesn't depend on the SQLite connection.** Ownership can be taken *before* a writable harness is opened (DESIGN §4: "Reject a competing owner before opening a writable harness"). It doesn't limit how many connections or readers the owner uses, and it can't be lost because a `Database` object was garbage-collected (probe E vs E3).
+5. **It works the same on Linux and macOS, as far as the APIs go.** `flock(int, int)` is not variadic, and BSD and Linux share the `LOCK_*` values. Of the candidates, it is the only one with no variadic FFI call and no OFD dependency.
 
 Why the lock is on a companion file and not the home: on Linux, `flock` and `fcntl` locks are independent, and `flock` on the home itself works (probe D). On macOS and FreeBSD, `flock`, `fcntl` and `lockf` locks **interact** (see the [Stack Overflow answer](https://stackoverflow.com/questions/22409780/flock-vs-lockf-on-linux) and the [apenwarr locking notes](https://apenwarr.ca/log/20101213-everything-you-never-wanted-to-know-about-file-locking)). An exclusive whole-file `flock` on the home would then conflict with SQLite's own `fcntl` byte-range locks, even inside the owner process. The likely result is `SQLITE_BUSY` on the owner's first read. This is **not verified on a Mac**. The companion avoids the question entirely: SQLite never opens it.
 
@@ -49,7 +51,7 @@ SQLite `locking_mode=EXCLUSIVE`, the runner-up, is portable and kernel-released.
 - No other process can read the home while it is owned, not even for status.
 - The only way to check for an owner is to open the home with SQLite first.
 
-It stays a reasonable defense-in-depth option for P0-02 on top of the flock, if the facade really does keep a single connection.
+P0-02's facade does keep exactly one connection, and `initSql` could inject `PRAGMA locking_mode = EXCLUSIVE`. It stays a possible defense-in-depth layer on top of the flock. It is **not** recommended by default, though: it would also lock out read-only inspection from other processes, and any second in-process connection (tooling, backup). Not exercised through `initSql`.
 
 ## Alias handling
 
@@ -73,19 +75,20 @@ bun test src/home/ownership.test.ts
 ```
 bun test v1.4.4 (38afee6c8)
 
- 12 pass
+ 13 pass
  0 fail
- 40 expect() calls
-Ran 12 tests across 1 file. [2.27s]
+ 46 expect() calls
+Ran 13 tests across 1 file. [2.54s]
 ```
 
-The suite was run 5 times in a row, 12/12 each time. Each test spawns real `bun` processes through `src/home/ownership.fixture.ts`. Per-test results from `--reporter=junit`:
+Before the rebase onto P0-02, the 12-test suite passed 5 runs in a row. After the rebase, the 13-test suite passed 4 runs in a row. The full repo `bun test` gives 58 pass, 0 fail, and `bunx tsc --noEmit -p .` is clean. Each test spawns real `bun` processes through `src/home/ownership.fixture.ts`. Per-test results from `--reporter=junit`:
 
 ```
 racing acquirers produce exactly one owner; the rest are refused cleanly          0.33s   (8 processes, file barrier)
 SIGKILLed owner: next acquire succeeds with no cleanup step                       0.05s
 SIGSTOPped owner keeps ownership however long it is paused                        1.55s   (paused 1.5 s, then SIGCONT)
-owner opening and closing the home with SQLite does not drop ownership            0.04s   (fcntl trap regression)
+owner opening and closing the home with SQLite does not drop ownership            0.05s   (fcntl trap regression: openHomeDatabase, then bun:sqlite, both closed)
+ownership and the home database facade coexist in the owner process ...         0.10s   (see below)
 a child spawned by the owner does not inherit ownership after the owner dies      0.04s   (O_CLOEXEC; Bun sets it, fdinfo flags 02102002)
 an explicit release lets another process acquire                                  0.04s
 symlink, symlinked directory, relative path and '..' segments are all refused     0.12s
@@ -96,11 +99,20 @@ a directory is not a home                                                       
 replacing the home file while owned does not admit a second owner at that path    0.04s
 ```
 
+**Facade coexistence test, run in-process in the test runner:**
+
+1. `acquireHomeOwnership`, then `openHomeDatabase` (defaults: WAL, synchronous FULL, busy 5000), then create and insert.
+2. A competitor process is refused.
+3. Inside `db.transaction(...)`, an outside process tries `new DatabaseSync(home,{timeout:0}).exec(INSERT)` and gets `database is locked`. So SQLite's own locks are intact alongside the ownership lock. A competitor is still refused at this point.
+4. The rows commit.
+5. `db.close()`. A competitor is **still refused**: closing the only connection doesn't end ownership.
+6. `release()`. A competitor then acquires.
+
 **Do the tests catch real breakage?** Three mutations were applied to `ownership.ts` one at a time, and each was reverted afterwards:
 
 - Drop the `nlink` check → the hardlink test fails.
 - Use the path without `realpath` → the alias, missing and replace tests fail.
-- Swap `flock` on the companion for a POSIX `fcntl` lock on the home itself → the SQLite-close test and the same-process test fail (plus two companion-specific assertions).
+- Swap `flock` on the companion for a POSIX `fcntl` lock on the home itself. Re-run after the rebase: the SQLite-close test, the facade coexistence test and the same-process test fail, plus two companion-specific assertions (5 fail in total).
 
 ## Commands for the probes
 

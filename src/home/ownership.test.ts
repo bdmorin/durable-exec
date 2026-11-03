@@ -5,6 +5,7 @@ import { Database } from "bun:sqlite";
 import { existsSync, linkSync, mkdirSync, mkdtempSync, renameSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
+import { openHomeDatabase } from "../db/home-database.ts";
 import { acquireHomeOwnership, HomeOwnedError, HomeOwnershipError, LOCK_SUFFIX } from "./ownership.ts";
 
 const FIXTURE = join(import.meta.dir, "ownership.fixture.ts");
@@ -94,11 +95,42 @@ describe("cross-process exclusion", () => {
 
   test("owner opening and closing the home with SQLite does not drop ownership", async () => {
     // The POSIX fcntl() trap: closing any fd on a file drops the process's
-    // fcntl locks on it. The owner here writes through bun:sqlite and closes.
+    // fcntl locks on it. The owner writes through openHomeDatabase (node:sqlite)
+    // and then bun:sqlite, closing both.
     const { home } = makeHome();
     const owner = await hold(home, "hold-sqlite");
     expect(owner.status).toEndWith("sqlite-closed");
     expect(await attempt(home)).toBe("REFUSED owned");
+  }, 20_000);
+
+  test("ownership and the home database facade coexist in the owner process without disturbing each other", async () => {
+    const { home } = makeHome();
+    const h = await acquireHomeOwnership(home); // ownership first, then the writable harness
+    const db = await openHomeDatabase(home);
+    try {
+      await db.exec("CREATE TABLE hx_probe (n INTEGER)");
+      await db.run("INSERT INTO hx_probe VALUES (1)");
+      expect(await attempt(home)).toBe("REFUSED owned");
+
+      // SQLite's own locks on the home survive the ownership machinery: while the
+      // facade holds a write transaction, an outside writer gets SQLITE_BUSY.
+      await db.transaction(async (tx) => {
+        await tx.run("INSERT INTO hx_probe VALUES (2)");
+        const outside = Bun.spawnSync(["bun", "-e",
+          `const {DatabaseSync}=require("node:sqlite");` +
+          `try{new DatabaseSync(${JSON.stringify(home)},{timeout:0}).exec("INSERT INTO hx_probe VALUES (99)");console.log("WROTE")}` +
+          `catch(e){console.log(String(e.message))}`]);
+        expect(outside.stdout.toString()).toContain("database is locked");
+        expect(await attempt(home)).toBe("REFUSED owned");
+      });
+      expect(await db.all<{ n: number }>("SELECT n FROM hx_probe ORDER BY n")).toEqual([{ n: 1 }, { n: 2 }]);
+    } finally {
+      await db.close();
+    }
+    // closing the only connection to the home does not end ownership
+    expect(await attempt(home)).toBe("REFUSED owned");
+    h.release();
+    expect(await attempt(home)).toStartWith("OWNED ");
   }, 20_000);
 
   test("a child spawned by the owner does not inherit ownership after the owner dies", async () => {

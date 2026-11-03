@@ -1,9 +1,9 @@
 ---
 id: P0-06
 title: Phase 0 exit gate — record decisions as ADRs
-status: open
-owner:
-branch:
+status: claimed
+owner: coordinator
+branch: llm/gifted-galileo-atanlf
 depends_on: [P0-02, P0-03, P0-04, P0-05]
 owns: [docs/decisions/, work/BOARD.md]
 ---

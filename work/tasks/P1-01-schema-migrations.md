@@ -25,3 +25,4 @@ owns: [src/home/schema*, src/home/migrations*, evidence/P1-01/]
 - CLI wiring (P1-02), VFS tables beyond a placeholder decision (Phase 2).
 
 ## Notes / handoff
+- 2026-11-03 coordinator: an agent claimed this (commit f4bd640, never pushed) but the session closed first and the work was lost. Reset to open. Start fresh from llm/gifted-galileo-atanlf.

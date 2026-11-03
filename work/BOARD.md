@@ -6,7 +6,7 @@ Task index and dependency graph. **Live status lives in each task file**, not he
 grep -H -E '^(status|owner|branch):' work/tasks/*.md
 ```
 
-Protocol: [AGENTS.md § 3](../AGENTS.md#3-multi-agent-protocol). Template: [_templates/task.md](_templates/task.md).
+Latest session notes: [HANDOFF.md](HANDOFF.md). Protocol: [AGENTS.md § 3](../AGENTS.md#3-multi-agent-protocol). Template: [_templates/task.md](_templates/task.md).
 
 ## Phase 0 — prove the risky runtime boundaries
 

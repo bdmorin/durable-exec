@@ -5,9 +5,11 @@ Coordinator notes from the session that organized the repo and ran Phase 0. Read
 ## State at close
 
 - All work is on branch `llm/gifted-galileo-atanlf`, pushed. `main` is untouched at `bc2731a`, and no PR is open.
-- `bun install && bun test && bun run typecheck` → 68 pass, 0 fail, clean (Linux x86_64, Bun 1.4.4).
+- `bun install && bun test && bun run typecheck` → 83 pass, 0 fail, clean (Linux x86_64, Bun 1.4.4).
 - **Phase 0: done on Linux.** ADRs 0001–0004 in [docs/decisions/](../docs/decisions/). Evidence in `evidence/P0-0{1..5}/`.
-- **Phase 1: decomposed, not started.** P1-01 was in flight when the session closed. The agent got no further than its claim commit, and the unfinished worktree was lost with the container. The card has been reset to `open`. Start from the card, not from any `agent/P1-01-*` branch.
+- **Phase 1: P1-01 done** (schema, compatibility check, migrations; see [evidence/P1-01](../evidence/P1-01/README.md)). **Next up: P1-02 ∥ P1-03**, then P1-04.
+- **P1-01 contract for the next lanes:** order is acquire ownership → `checkHomeFile(path, { create })` → `openHomeDatabase` → `prepareHome(db, { create, appVersion })`. `checkHomeFile` must run before opening, because `openHomeDatabase` itself writes to foreign/empty files. New migrations: one file `src/home/migrations/NNNN-kebab-name.ts`, registered in `MIGRATIONS`, ids contiguous; whoever merges second renumbers. Migration 1 deliberately omits `hx_files` (Phase 2 owns it), so P0-03 probe homes are refused as `not-a-home`.
+- Possible ADR 0005 (frozen home-format fields: `hx_meta.format`, `format_version`, `application_id` "HRCX", `hx_migrations(id,name)`). The decisions currently live only in evidence/P1-01.
 
 ## Needs Brian
 
@@ -36,4 +38,4 @@ Coordinator notes from the session that organized the repo and ran Phase 0. Read
 - One worktree per task via isolated subagents; the coordinator merged with `--no-ff`, then **re-ran the full suite itself** before marking `done`.
 - Brief agents to `git checkout -b agent/<ID> llm/gifted-galileo-atanlf` first, since isolated worktrees can start at an old commit.
 - Cross-lane findings were relayed between running agents (e.g. P0-02's single-connection facts → P0-04), which caught the fcntl trap early.
-- Max useful parallelism next: P1-01 alone, then P1-02 ∥ P1-03 (∥ P0-07 on a Mac), then P1-04.
+- Max useful parallelism next: P1-02 ∥ P1-03 (∥ P0-07 on a Mac), then P1-04.

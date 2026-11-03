@@ -1,7 +1,7 @@
 ---
 id: P0-05
 title: Terminal renderer and embedded browser asset from compiled binary
-status: review
+status: done
 owner: P0-05-agent
 branch: agent/P0-05-tui-and-assets
 depends_on: [P0-01]
@@ -39,3 +39,4 @@ Packaging gate, not a UI build: pick a TypeScript terminal renderer by exercisin
   - Human visual check in real terminals.
   - Browser rendering.
   - An ADR for the renderer choice in `docs/decisions/`. It was not written here because it is outside this task's allowed paths.
+- 2026-11-03 coordinator: merged; re-verified 61/61 + typecheck. Done for Linux; macOS + human visual check carried into P0-06.

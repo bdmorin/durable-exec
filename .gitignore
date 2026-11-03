@@ -14,6 +14,7 @@ scratch/
 *-wal
 *-shm
 *-journal
+*-hxowner
 
 # secrets never live here
 .env

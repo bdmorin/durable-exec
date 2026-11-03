@@ -1,7 +1,7 @@
 ---
 id: P0-04
 title: Select and exercise single-owner home exclusion
-status: review
+status: done
 owner: P0-04-agent
 branch: agent/P0-04-home-ownership
 depends_on: []
@@ -40,3 +40,4 @@ Choose a platform-supported mechanism guaranteeing exactly one writable owner pe
   - Write the ownership ADR in `docs/decisions/`.
   - Add `*-hxowner` to `.gitignore`.
   - Never delete the companion file. Deleting it while the home is owned breaks exclusion.
+- 2026-11-03 coordinator: merged; re-verified full suite 58/58 x3 + typecheck. Done for Linux; macOS box stays open and is carried into P0-06.

@@ -1,9 +1,9 @@
 ---
 id: P0-03
 title: Compiled binary reopens Pi storage and runs a real file tool
-status: open
-owner:
-branch:
+status: claimed
+owner: P0-03-agent
+branch: agent/P0-03-compiled-pi-storage
 depends_on: [P0-01, P0-02]
 owns: [evidence/P0-03/]
 ---

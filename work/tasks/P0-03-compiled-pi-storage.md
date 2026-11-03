@@ -1,7 +1,7 @@
 ---
 id: P0-03
 title: Compiled binary reopens Pi storage and runs a real file tool
-status: review
+status: done
 owner: P0-03-agent
 branch: agent/P0-03-compiled-pi-storage
 depends_on: [P0-01, P0-02]
@@ -30,3 +30,4 @@ Prove the riskiest packaging claim: a `bun build --compile` executable opens Pi 
 - Added: `src/workspace/sqlite-stub-env.ts` (+ test, env-conformance baseline 2/22), hidden Phase 0 probe subcommand `probe-p0-03` (`src/cli/probe-p0-03.ts`, + compiled-binary test). Remove the probe once Phase 1/2 commands cover this path.
 - **Out-of-lane edit:** `package.json` `compile` script now passes `--no-compile-autoload-dotenv --no-compile-autoload-bunfig`. By default Bun 1.4.4 compiled executables autoload `.env` and `bunfig.toml` from the cwd, and a cwd `bunfig.toml` `preload` executes arbitrary code (reproduced). Consider an ADR for compile flags.
 - Open: macOS arm64 run; `edit`/`bash` tools not driven in a turn; crash/kill mid-turn and `-wal` recovery; VFS-write vs tool-result atomicity (DESIGN §4) is not addressed by the stub.
+- 2026-11-03 coordinator: merged; full suite 68/68 + typecheck; independently reproduced the cwd bunfig preload trap on a default build and its absence with the flags. Done for Linux.

@@ -4,7 +4,8 @@ Status: planning only. No listed application command is implemented yet. [DESIGN
 
 ## Baseline and engineering rules
 
-- Work in TypeScript on Bun. Observed local Bun: 1.4.3; Node: 26.12.0.
+- Work in TypeScript on Bun. Observed local Bun: 1.4.3; Node: 26.12.0. Cloud agents: Bun 1.4.4 on Linux x86_64.
+- Phase 0 decisions (Linux-exercised, macOS pending) are in [decisions/](decisions/): Chord `node:sqlite` adapter, flock companion-file ownership, pi-tui renderer, no-autoload compile flags.
 - Pin pi-durable, pi-ai, and Chord to the exercised 1.5.0 family initially; do not use floating SDK versions. The published pi-durable package declares Node >=22.19.0, not an upstream promise of complete Bun compatibility.
 - Commander 15.0.0 was the published version inspected during planning. Validate and pin the selected version under Bun rather than inheriting its Node engine declaration as compatibility proof.
 - Use Bun's native HTTP server and embedded browser assets. Keep framework choices subordinate to the application contract. Select a TypeScript terminal renderer by exercising streaming, input, abort, non-TTY behavior, and compiled packaging before committing to it.

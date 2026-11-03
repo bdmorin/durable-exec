@@ -20,6 +20,7 @@ Several agents work this repo in parallel. This file is the operating manual for
 - **Pin everything.** pi-durable / pi-ai / Chord at the exercised 1.5.0 family; no floating SDK versions; commit the lockfile.
 - **Never pass an async callback to Bun's `db.transaction()`.** Explicit BEGIN/COMMIT/ROLLBACK behind a serialized queue. Never hold a transaction across a model call or subprocess.
 - **No ambient anything:** no implicit `~/.config`, `.env`, cwd discovery, telemetry exporter, update check, CDN asset, or runtime package install.
+- **Compile only via `bun run compile`.** A bare `bun build --compile` binary autoloads `.env`/`bunfig.toml` from the cwd, and a hostile `bunfig.toml` preload runs arbitrary code ([ADR 0004](docs/decisions/0004-compile-flags.md)).
 - **Pi owns `pi_*`.** Touch Pi state only through Pi APIs. App tables are `hx_*`.
 - **No credentials in the repo, the home file, logs, or evidence.** Reference env-var *names* only.
 - **Offline fixtures are labeled as offline.** Never claim the real-provider path works on mock evidence.
@@ -68,7 +69,7 @@ Small, imperative subject, body says *why*. Reference the task ID: `P0-02: seria
 
 ## 4. Environment reality check
 
-- **Target vs. cloud:** Phase 0 ownership/packaging proofs target **macOS arm64** (Bun 1.4.3, Node 26.12.0 observed). Cloud sessions run **Linux x86_64** (Bun 1.4.4, Node 22 observed at setup). Linux results are useful but are *not* the macOS proof — label evidence with the platform and leave macOS-only criteria open.
+- **Target vs. cloud:** Phase 0 ownership/packaging proofs target **macOS arm64** (Bun 1.4.3, Node 26.12.0 observed). Cloud sessions run **Linux x86_64** (Bun 1.4.4, Node 22). Phase 0 passed on Linux; every macOS box is still open (see work/tasks/P0-06). Linux results are useful but are *not* the macOS proof — label evidence with the platform and leave macOS-only criteria open.
 - **Reference project** `/Users/bdmorin/src/github.com/disler/durable-pi` exists only on Brian's Mac. Cloud agents can't read it; don't invent its contents. If a task needs it, mark `blocked: needs local reference` or ask.
 - **Model credentials:** none are assumed. Real-provider tasks need an operator-approved env-var binding; report the gap rather than mocking around it.
 

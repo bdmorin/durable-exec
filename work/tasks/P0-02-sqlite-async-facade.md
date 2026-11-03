@@ -1,7 +1,7 @@
 ---
 id: P0-02
 title: Shared async SQLite facade with awaited rollback
-status: review
+status: done
 owner: P0-02-agent
 branch: agent/P0-02-sqlite-async-facade
 depends_on: [P0-01]
@@ -34,3 +34,4 @@ One serialized database facade shared by `hx_*` application code and Pi's `Sqlit
 - For P0-04: one connection, never closed and reopened by the adapter. `initSql` runs before WAL setup, so `locking_mode` can be injected there; nothing is set by default. Beware POSIX fcntl lock loss if the home file is opened and closed separately in-process.
 - `SqliteStorage.close()` closes the shared facade, so close Pi storage last.
 - Open: macOS arm64 not exercised. The ADR for the adapter is left to P0-06 (exit gate).
+- 2026-11-03 coordinator: merged into llm/gifted-galileo-atanlf; re-verified 45/45 tests and typecheck.
